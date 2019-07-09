@@ -28,6 +28,25 @@
         Предусмотреть возможность изменение размеров холста, ячеек сетки и цвета.
     **		
     */
+    function setca(width,height,color) {
+      var canvas = document.getElementById("canvas");
+      var canWidth = canvas.getAttribute("width");
+      var canHeight = canvas.getAttribute("height");
+      var context = canvas.getContext("2d");
+      context.beginPath();
+      for(var x = width; x<canWidth; x += width) {
+        context.moveTo(x, 0);
+        context.lineTo(x, canHeight);
+      }
+      for(var y = height; y<canHeight; y += height) {
+        context.moveTo(0, y);
+        context.lineTo(canWidth, y);
+      }
+      context.strokeStyle = color;
+      context.stroke()
+
+    }
+    setca(15,15,"red");
   </script>
 </body>
 
