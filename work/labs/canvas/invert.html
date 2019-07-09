@@ -33,6 +33,28 @@
         Картинка для работы: "picture.jpg"
     **		
     */
+    window.addEventListener("load", invertImg, false);
+
+    function invertImg() {
+      let canvas = document.getElementById("canvas");
+      if (canvas.getContext) {
+        let context = canvas.getContext("2d");
+        let pic = new Image();
+        pic.src = 'imgs/picture.jpg';
+        pic.onload = function () {
+          context.drawImage(pic, 0, 0);
+          let dataImg = context.getImageData(0,0,pic.width,pic.height);
+          let pix = dataImg.data;
+          for (let i=0; i<pix.length; i+=4){
+            pix[i]=255- pix[i];
+            pix[i+1]=255-pix[i+1];
+            pix[i+2]=255-pix[i+2];
+            pix[i+3]=255;
+          }
+          context.putImageData(dataImg,0,0);
+        }
+      }
+    }
   </script>
 </body>
 
