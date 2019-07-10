@@ -20,7 +20,6 @@
 <body>
   <canvas id="canvas" width="600" height="300"></canvas>
   <script>
-    var text = "Lorem ipsum dolor sit amet, coram posset diam ' deo. Volentes mihi quidditas patria Utinam rediit in modo compungi mulierem ubi confudit huc est se sed. Suave canere se sed dominum in fuerat accidens quam dicentes parem. Erige me missam ne velocitate mare convivio ubi diu perdidi si non solutionem innocentem tantusque amorem infirmata dictum in. Lorem ipsum dolor sit amet, coram posset diam ' deo. Volentes mihi quidditas patria Utinam rediit in modo compungi mulierem ubi confudit huc est se sed. Suave canere se sed dominum in fuerat accidens quam dicentes parem. Erige me missam ne velocitate mare convivio ubi diu perdidi si non solutionem innocentem tantusque amorem infirmata dictum in.";
     /*
      **
         ЗАДАНИЕ
@@ -34,6 +33,40 @@
         Межстрочный интервал: 25
     **		
     */
+    let text = "Lorem ipsum dolor sit amet, coram posset diam ' deo. Volentes mihi quidditas patria Utinam rediit in modo compungi mulierem ubi confudit huc est se sed. Suave canere se sed dominum in fuerat accidens quam dicentes parem. Erige me missam ne velocitate mare convivio ubi diu perdidi si non solutionem innocentem tantusque amorem infirmata dictum in. Lorem ipsum dolor sit amet, coram posset diam ' deo. Volentes mihi quidditas patria Utinam rediit in modo compungi mulierem ubi confudit huc est se sed. Suave canere se sed dominum in fuerat accidens quam dicentes parem. Erige me missam ne velocitate mare convivio ubi diu perdidi si non solutionem innocentem tantusque amorem infirmata dictum in.";
+
+    function wrapText(context, text, marginLeft, marginTop, maxWidth, lineHeight)
+    {
+      let words = text.split(" ");
+      //console.log(words);
+      let countWords = words.length;
+      console.log(countWords);
+      let line = "";
+      for (let n = 0; n < countWords; n++) {
+        let testLine = line + words[n] + " ";
+        let testWidth = context.measureText(testLine).width;
+        if (testWidth > maxWidth) {
+          context.fillText(line, marginLeft, marginTop);
+          line = words[n] + " ";
+          marginTop += lineHeight;
+        }
+        else {
+          line = testLine;
+        }
+      }
+      context.fillText(line, marginLeft, marginTop);
+    }
+    let canvas = document.getElementById("canvas");
+    let context = canvas.getContext("2d");
+    let maxWidth = canvas.getAttribute("width"); //размер поле, где выводится текст
+    let lineHeight = 25;
+    /*если мы знаем высоту текста, то мы можем
+     предположить, что высота строки должна быть именно такой*/
+    let marginLeft = 10;
+    let marginTop = 20;
+    context.font = "16pt Arial";
+    context.fillStyle = "#000";
+    wrapText(context, text, marginLeft, marginTop, maxWidth, lineHeight);
   </script>
 </body>
 
