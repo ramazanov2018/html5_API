@@ -16,7 +16,7 @@
   <input type="text" id="email">
   <label for="phone">Телефон:</label>
   <input type="text" id="phone">
-  <button onclick="saveItem()">Сохранить</button>
+  <button id="saveItem">Сохранить</button>
   <hr>
   <table>
     <thead>
@@ -26,24 +26,17 @@
         <th>Фамилия</th>
         <th>Email</th>
         <th>Телефон</th>
-        <th>Изменить</th>
         <th>Удалить</th>
       </tr>
     </thead>
     <tbody id="output">
       <tr>
-        <td colspan="7">&nbsp;</td>
+        <td colspan="6">&nbsp;</td>
       </tr>
     </tbody>
   </table>
   <button onclick="updateTable()">Показать всех</button>
-
   <script>
-    var db;
-    var dbName = "addressBook";
-    var dbVersion = 1;
-    var tableName = "users";
-    var emptyHeader = "Записей в книге нет";
 
     /*
      **	
@@ -58,10 +51,160 @@
        - выведите в консоль описание ошибки
       Опишите функцию updateTable(), которая перерисовывает таблицу и выводит все записи из базы данных	
       Опишите функцию saveItem(), которая выбирает введённые значения и записывает их в базу данных
-      Опишите функцию updateItem(key), которая по переданному ключу изменяет текущую запись в базе данных
       Опишите функцию deleteItem(key), которая по переданному ключу удаляет запись из базы данных
    **
    */
+
+    let db;
+    let dbName = "addressBook";
+    let dbVersion = 1;
+    let tableName = "users";
+    let emptyHeader = "Записей в базе нет";
+    let deleteMessage= "Вы действительно хотите удалить запись с Id = ";
+
+    var idbSupported = false;
+
+    window.addEventListener("load", function(){
+
+      if("indexedDB" in window) {
+        idbSupported = true;
+      }
+
+    },false);
+
+      let openRequest = indexedDB.open(dbName,dbVersion);
+
+      openRequest.onupgradeneeded = function(e) {
+        let thisDB = e.target.result;
+
+        if(!thisDB.objectStoreNames.contains(tableName)) {
+          //Создаем таблицу если нет с автоиндексацией
+          thisDB.createObjectStore(tableName,{autoIncrement:true});
+        }
+      };
+
+      openRequest.onsuccess = function(e) {
+        db = e.target.result;
+        document.querySelector("#saveItem").addEventListener("click", saveItem, false);
+        //updateTable();
+      };
+
+      openRequest.onerror = function(e) {
+        console.log("Error");
+        console.dir(e);
+      };
+
+    //Функция для сохранения данных в БД
+    function saveItem() {
+        
+        let firstName = document.getElementById("firstName").value;
+        let lastName = document.getElementById("lastName").value;
+        let email = document.getElementById("email").value;
+        let phone = document.getElementById("phone").value;
+        
+        let transaction = db.transaction([tableName],"readwrite");
+        let store = transaction.objectStore(tableName);
+
+        let users = {
+          firstName:firstName,
+          lastName:lastName,
+          email:email,
+          phone:phone,
+        };
+        let request = store.add(users);
+        
+        request.onerror = function(e) {
+          console.log("Error",e.target.error);
+          //some type of error handler
+        };
+
+        request.onsuccess = function(e) {
+          console.log("Woot! Did it");
+        }
+      }
+
+      //Функция для вывода данных из БД
+      function updateTable() {
+
+        let tbody = document.getElementById("output");
+
+        while (tbody.hasChildNodes())
+        {
+          tbody.removeChild(tbody.lastChild)
+        }
+
+        let transaction = db.transaction(tableName, "readonly");
+        let objectStore = transaction.objectStore(tableName);
+
+        let cursor = objectStore.openCursor();
+
+        cursor.onsuccess = function(e) {
+          let res = e.target.result;
+          if(res)
+          {
+            let tr = document.createElement("tr");
+
+            let key = CreatElement("td", res.key);
+            let firstName = CreatElement("td", res.value.firstName);
+            let lastName = CreatElement("td", res.value.lastName);
+            let email = CreatElement("td", res.value.email);
+            let phone = CreatElement("td", res.value.phone);
+            let deleteItem = CreatElement("button", "Удалить");
+            let ID = res.key;
+            deleteItem.setAttribute("onclick", "deleteItem("+ID+")");
+
+            tr.appendChild(key);
+            tr.appendChild(firstName);
+            tr.appendChild(lastName);
+            tr.appendChild(email);
+            tr.appendChild(phone);
+            tr.appendChild(deleteItem);
+
+            tbody.appendChild(tr);
+
+            console.log("Key", res.key);
+            console.log("Data", res.value);
+            console.log("Data", res.value.firstName);
+            res.continue();
+          }else
+          {
+            let tr = document.createElement("tr");
+            let td = CreatElement("td", emptyHeader);
+            td.setAttribute("colspan", 6);
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+          }
+        }
+      }
+
+      //Функция для создания елемента стекстовым узлом
+      function CreatElement(tag, text) {
+        let element = document.createElement(tag);
+        let elementText = document.createTextNode(text);
+        element.appendChild(elementText);
+        return element;
+      }
+
+      function deleteItem(key)
+      {
+        let result = confirm(deleteMessage + key);
+        if (result)
+        {
+          let transaction = db.transaction([tableName],"readwrite");
+          let store = transaction.objectStore(tableName);
+          let request = store.delete(key);
+
+          request.onerror = function(e) {
+            console.log("Error",e.target.error);
+          };
+
+          request.onsuccess = function() {
+            alert("Запись с iD = " + key + " удалена");
+            updateTable();
+          }
+        }
+
+      }
   </script>
 </body>
 
