@@ -4,9 +4,20 @@
 <head>
   <meta charset="utf-8" />
   <title>HTML5 API. Лабораторная работа: используем веб-работников</title>
+  <style>
+  </style>
+</head>
+
+<body>
+  <div id="d">Загружено на <span id="s">0</span>%</div>
+  <div>
+    <button id="b">Запустить цикл</button>
+  </div>
+  <progress id="p" value="0" max="100"></progress>
+
   <script>
     /*
-     **	
+     **
       ЗАДАНИЕ
       *******
       Создать файл для веб-работника
@@ -23,16 +34,29 @@
       Можете добавить новый HTML5 элемент meter и изменять его значение
     **
     */
-  </script>
-  <style>
-  </style>
-</head>
+    let d = document.getElementById("d");
+    let s = document.getElementById("s");
+    let p = document.getElementById("p");
+    let b = document.getElementById("b");
 
-<body>
-  <div id="d"></div>
-  <div>
-    <button id="b">Запустить цикл</button>
-  </div>
+    b.onclick = function ()
+    {
+      let worker = new Worker("worker.js");
+      let self = this;
+
+      worker.onmessage = function(event){
+        if (event.data.type === 1)
+        {
+          d.innerHTML = event.data.msg;
+          self.disabled = "";
+        }
+        s.firstChild.nodeValue = p.value = event.data.msg;
+      };
+      worker.postMessage(1000000000);
+      self.disabled = "disabled";
+    }
+
+  </script>
 </body>
 
 </html>
